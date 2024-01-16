@@ -1,3 +1,9 @@
+audio/
+temp/
+result/
+
+*.aac
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
