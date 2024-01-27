@@ -2,13 +2,13 @@ import asyncio
 import os
 import re
 import shutil
+from datetime import datetime
 
 import torch
 import whisper
 from bilix.sites.bilibili import DownloaderBilibili
 
-
-audio_url = "https://www.bilibili.com/video/BV1Fa4y1273F"
+audio_urls = ["https://www.bilibili.com/video/BV15N4y1J7CA"]
 
 
 async def downloadaudio(url):
@@ -28,30 +28,49 @@ if not os.path.exists(temp_folder_path):
 if not os.path.exists(result_folder_path):
     os.makedirs(result_folder_path)
 
-
-## download audio to ./temp
-print("Downloading audio from", audio_url)
-asyncio.run(downloadaudio(audio_url))
-print("Audio Downloaded.")
-audio_name = os.listdir(temp_folder_path)[0]
-temp_path = temp_folder_path + "/" + audio_name
-audio_path = audio_folder_path + "/" + audio_name
-shutil.move(temp_path, audio_path)
-
+## load whisper model
+# model_name = "large-v3"
+model_name = "medium"
+print("Using whisper model", model_name)
+print("Loading Model......")
+time1 = datetime.now()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = whisper.load_model(
-    "medium",
+    name=model_name,
     device=device,
     download_root="./.cache/whisper",
 )
-result = model.transcribe(
-    audio_path,
-    verbose=True,
-    initial_prompt="“生于忧患，死于安乐。岂不快哉？”",
-    # prepend_punctuations="“‘¿([{-",
-    # append_punctuations="。，！？：”’)]}、",
-)
-text = result["text"]
-text = re.sub(",", "，", text)
-with open(result_folder_path + "/" + audio_name + ".txt", "w", encoding="utf-8") as f:
-    f.write(text)
+time2 = datetime.now()
+print("Model Loaded in", (time2 - time1).seconds, "seconds")
+
+
+## download and transcribe
+for audio_url in audio_urls:
+    ## download audio to ./temp
+    print("Downloading audio from", audio_url)
+    asyncio.run(downloadaudio(audio_url))
+    print("Audio Downloaded.")
+    audio_name = os.listdir(temp_folder_path)[0]
+    temp_path = temp_folder_path + "/" + audio_name
+    audio_path = audio_folder_path + "/" + audio_name
+    shutil.move(temp_path, audio_path)
+
+    print("Start Transcribe......")
+    time3 = datetime.now()
+    result = model.transcribe(
+        audio_path,
+        verbose=True,
+        initial_prompt="“生于忧患，死于安乐。岂不快哉？”简体中文，加上标点。",
+    )
+    time4 = datetime.now()
+    print("Transcribe Finish in", (time4 - time3).seconds, "seconds")
+
+    print("Saving result......")
+    text = result["text"]
+    text = re.sub(",", "，", text)
+    text = re.sub(r"\?", "？", text)
+    with open(
+        result_folder_path + "/" + audio_name + ".txt", "w", encoding="utf-8"
+    ) as f:
+        f.write(text)
+    print("Result Saved to", result_folder_path + "/" + audio_name + ".txt")
