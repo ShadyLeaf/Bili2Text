@@ -1,6 +1,6 @@
 # Bili2Text
 
-Transcribe Bilibili Video to Text with [Whisper](https://github.com/Const-me/Whisper).
+Transcribe Bilibili Video to Text with [Whisper](https://github.com/openai/whisper).
 
 ## Quick Start
 
@@ -17,11 +17,14 @@ Install ffmpeg (using [chocolately](https://chocolatey.org/))
 choco install ffmpeg
 ```
 
-Replace `audio_url` in `main.py` with target URL, here's an example:
+Replace `audio_urls` in `main.py` with list of target URLs, here's an example:
 
 ```python
 # main.py
-audio_url = "https://www.bilibili.com/video/BV1Fa4y1273F"
+audio_urls = [
+    "https://www.bilibili.com/video/BV1Fa4y1273F",
+    "https://www.bilibili.com/video/BV15N4y1J7CA",
+]
 ```
 
 Run `main.py`
