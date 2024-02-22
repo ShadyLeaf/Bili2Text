@@ -1,7 +1,7 @@
 audio/
 temp/
 result/
-
+*.txt
 *.aac
 
 # Byte-compiled / optimized / DLL files
